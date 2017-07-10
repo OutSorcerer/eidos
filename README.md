@@ -1,6 +1,6 @@
 # eidos.ml #
 
-eidos.ml is a library for machine learning writen in C#.
+eidos.ml is a library for machine learning writen in C# and based on MathNet.Numerics.
 
 The main goal of the library is productive, expressive and performant development of machine learning pipelines.  
 
