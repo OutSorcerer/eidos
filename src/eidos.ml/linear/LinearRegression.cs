@@ -8,7 +8,7 @@ namespace eidos.ml.linear
     {
         private readonly bool _intercept;
 
-        public LinearRegression(bool intercept)
+        public LinearRegression(bool intercept = true)
         {
             _intercept = intercept;
         }
