@@ -19,6 +19,10 @@ namespace eidos.ml.linear
 
         public Vector<double> Predict(Matrix<double> x)
         {
+            if (Regression.Intercept)
+            {
+                x = x.InsertColumn(0, Vector<double>.Build.Dense(x.RowCount, Vector<double>.One));
+            }
             return x * _weights;
         }
     }

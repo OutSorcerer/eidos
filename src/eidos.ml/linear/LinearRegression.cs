@@ -6,16 +6,16 @@ namespace eidos.ml.linear
 {
     public class LinearRegression : IRegression<LinearRegression, LinearRegressionEstimator>
     {
-        private readonly bool _intercept;
+        public bool Intercept { get; }
 
         public LinearRegression(bool intercept = true)
         {
-            _intercept = intercept;
+            Intercept = intercept;
         }
 
         public LinearRegressionEstimator Fit(Matrix<double> x, Vector<double> y)
         {
-            if (_intercept)
+            if (Intercept)
             {
                 x = x.InsertColumn(0, Vector<double>.Build.Dense(x.RowCount, Vector<double>.One));
             }
