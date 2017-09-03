@@ -2,9 +2,5 @@
 {
     public class EidosTestBase
     {
-        protected FloatingPointAssertions FloatingPointAssert()
-        {
-            return new FloatingPointAssertions();
-        }
     }
 }

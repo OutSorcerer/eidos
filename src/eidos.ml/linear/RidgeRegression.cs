@@ -12,29 +12,42 @@ namespace eidos.ml.linear
 
         public double Alpha { get; }
 
-        public RidgeRegression(bool intercept = true, double alpha = 1.0)
+        public RidgeRegressionMethod Method { get; set; }
+
+        public RidgeRegression(bool intercept = true, double alpha = 1.0, RidgeRegressionMethod method = RidgeRegressionMethod.Automatic)
         {
             Intercept = intercept;
             Alpha = alpha;
+            Method = method;
         }
-
+        
         public RidgeRegressionEstimator Fit(Matrix<double> x, Vector<double> y)
         {
             var (x1, y1, xMean, yMean) = CenterData(x, y);
             (x, y) = (x1, y1);
-            //if (Intercept)
-            //{
-            //    x = x.InsertColumn(0, Vector<double>.Build.Dense(x.RowCount, Vector<double>.One));
-            //}
-            var w = Lsqr(x, y, Alpha);
-            if (Intercept)
+            if (Method == RidgeRegressionMethod.Automatic)
             {
-                var intercept = GetIntercept(xMean, yMean, w);
-                var w1 = Vector<double>.Build.Dense(w.Count + 1);
-                w.CopySubVectorTo(w1, 0, 1, w.Count);
-                w1[0] = intercept;
-                w = w1;
-                
+                // TODO: implement some logic here
+                Method = RidgeRegressionMethod.LSQR;
+            }
+            Vector<double> w;
+            if (Method == RidgeRegressionMethod.LSQR)
+            {
+                // TODO: make benchmark with sparse matrices.
+                w = Lsqr(x, y, Alpha);
+
+                if (Intercept)
+                {
+                    var intercept = GetIntercept(xMean, yMean, w);
+                    var w1 = Vector<double>.Build.Dense(w.Count + 1);
+                    w.CopySubVectorTo(w1, 0, 1, w.Count);
+                    w1[0] = intercept;
+                    w = w1;
+                }
+            }
+            else
+            {
+                throw new NotSupportedException();
             }
             return new RidgeRegressionEstimator(this, w);
         }
@@ -72,6 +85,13 @@ namespace eidos.ml.linear
             return result;
         }
 
+        // Find the least-squares solution to a large, sparse, linear system of equations.
+        //
+        // The original of this method is published at http://web.stanford.edu/group/SOL/software/lsqr/.
+        // AUTHORS: Chris Paige, Michael Saunders.
+        // CONTRIBUTORS: James Howse, Michael Friedlander, John Tomlin, Miha Grcar, Jeffery Kline, Dominique Orban, Austin Benson, Victor Minden, Matthieu Gomez, Tim Holy.
+        // The software for LSQR(f77 version) is provided by SOL, Stanford University
+        // under the terms of the OSI Common Public License(CPL): http://www.opensource.org/licenses/cpl1.0.php
         private static Vector<double> Lsqr(Matrix<double> _x, Vector<double> y, double alpha, bool show = false, bool useSymOrtho = true)
         {
             // Initialize.
@@ -194,7 +214,7 @@ namespace eidos.ml.linear
             //------------------------------------------------------------------
             //     Main iteration loop.
             //------------------------------------------------------------------
-            while (itn < (itnlim ?? int.MaxValue))  // TODO: add default value for intlim (2*n)
+            while (itn < (itnlim ?? 2 * n))
             {
                 itn = itn + 1;
 
@@ -390,7 +410,13 @@ namespace eidos.ml.linear
             return x;
         }
 
-        // TODO: find the article with this method
+        // Stable implementation of Givens rotation.
+        // 
+        // The routine 'SymOrtho' was added for numerical stability.
+        // This is recommended by S.-C.Choi in http://www.stanford.edu/group/SOL/dissertations/sou-cheng-choi-thesis.pdf. 
+        // This function is baed on SciPy implementation at https://github.com/scipy/scipy/blob/master/scipy/sparse/linalg/isolve/lsqr.py.
+        // Copyright (c) 2003-2017 SciPy Developers.
+        // Licensed under BSD 3-clause "New" or "Revised" License https://github.com/scipy/scipy/blob/master/LICENSE.txt.
         private static (double, double, double) SymOrtho(double a, double b)
         {
             double c = 0, s = 0, r = 0;
