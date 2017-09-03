@@ -1,5 +1,5 @@
-﻿using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.Statistics;
+﻿using MathNet.Numerics;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace eidos.ml.metrics
 {
@@ -7,7 +7,7 @@ namespace eidos.ml.metrics
     {
         public static double MeanSquaredError(Vector<double> yTrue, Vector<double> yPred)
         {
-            return (yTrue - yPred).PointwisePower(2).Mean();
+            return Distance.MSE(yTrue, yPred);
         }
     }
 }
